@@ -23,21 +23,8 @@ def add_control_dep(a, b):
     if a is not None and b is not None:
         control_deps.append((a,b))
 
-# get first node that postdominates this one
-def _get_first_dominating(node):
-    splits = 0
-    while True:
-        if len(node.postdecessors) > 1:
-            splits += 1
-        elif len(node.postdecessors) == 0:
-            return node
-        node = node.postdecessors[0]
-        if len(node.predecessors) > 1:
-            splits -= 1
-        if splits <= 0:
-            return node
-
-def get_first_dominating(node):
+# This is supposed to fetch the immediate postdominator of a node, but it's buggy and fails to perform on even simple graphs.
+def get_ipdom(node):
     nextround = set()  # set for next round
     currentround = set([node])  # current set
     while True:
@@ -56,12 +43,12 @@ def get_first_dominating(node):
 def get_control_deps(cfg):
     for node in cfg:
         for pred in node.predecessors:
-            pred_dominated = get_first_dominating(pred)  # "down" the cfg
+            pred_dominated = get_ipdom(pred)  # "down" the cfg
             depender = node
             while depender != pred_dominated:
                 assert(is_valid_node(pred_dominated))
                 add_control_dep(depender, pred)
-                depender = get_first_dominating(depender)
+                depender = get_ipdom(depender)
     return control_deps
 
 # The example graph tested here:
